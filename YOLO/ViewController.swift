@@ -17,7 +17,7 @@ import CoreML
 import UIKit
 import Vision
 
-var mlModel = try! yolov8m(configuration: .init()).model
+var mlModel = try! detector(configuration: .init()).model
 
 class ViewController: UIViewController {
     @IBOutlet var videoPreview: UIView!
@@ -79,6 +79,7 @@ class ViewController: UIViewController {
     }
 
     @IBAction func indexChanged(_ sender: Any) {
+        /*
         selection.selectionChanged()
         activityIndicator.startAnimating()
 
@@ -104,9 +105,10 @@ class ViewController: UIViewController {
         }
         setModel()
         setUpBoundingBoxViews()
-        activityIndicator.stopAnimating()
+        activityIndicator.stopAnimating()*/
     }
 
+    /*
     func setModel() {
         /// VNCoreMLModel
         detector = try! VNCoreMLModel(for: mlModel)
@@ -121,7 +123,7 @@ class ViewController: UIViewController {
         t2 = 0.0 // inference dt smoothed
         t3 = CACurrentMediaTime()  // FPS start
         t4 = 0.0  // FPS dt smoothed
-    }
+    }*/
 
     /// Update thresholds from slider values
     @IBAction func sliderChanged(_ sender: Any) {
@@ -163,8 +165,8 @@ class ViewController: UIViewController {
     }
 
     func setLabels() {
-        self.labelName.text = "YOLOv8m"
-        self.labelVersion.text = "Version " + UserDefaults.standard.string(forKey: "app_version")!
+        //self.labelName.text = "YOLOv8m"
+        //self.labelVersion.text = "Version " + UserDefaults.standard.string(forKey: "app_version")!
     }
 
     @IBAction func playButton(_ sender: Any) {
@@ -310,6 +312,8 @@ class ViewController: UIViewController {
         DispatchQueue.main.async {
             if let results = request.results as? [VNRecognizedObjectObservation] {
                 self.show(predictions: results)
+            } else if let results2 = request.results as? [VNCoreMLFeatureValueObservation] {
+                self.show2(predictions: results2)
             } else {
                 self.show(predictions: [])
             }
@@ -319,7 +323,7 @@ class ViewController: UIViewController {
                 self.t2 = self.t1 * 0.05 + self.t2 * 0.95  // smoothed inference time
             }
             self.t4 = (CACurrentMediaTime() - self.t3) * 0.05 + self.t4 * 0.95  // smoothed delivered FPS
-            self.labelFPS.text = String(format: "%.1f FPS - %.1f ms", 1 / self.t4, self.t2 * 1000)  // t2 seconds to ms
+            //self.labelFPS.text = String(format: "%.1f FPS - %.1f ms", 1 / self.t4, self.t2 * 1000)  // t2 seconds to ms
             self.t3 = CACurrentMediaTime()
         }
     }
@@ -383,6 +387,33 @@ class ViewController: UIViewController {
             return 0
         }
     }
+    
+    func show2(predictions: [VNCoreMLFeatureValueObservation]) {
+        for result in predictions {
+            guard let multiArray = result.featureValue.multiArrayValue else {
+                continue
+            }
+            //self.processDetections(multiArray: multiArray)
+            let numDetections = multiArray.shape[1].intValue
+            for i in 0..<numDetections {
+                let offset = i * 7
+                let a = multiArray[offset + 0].intValue
+                let b = multiArray[offset + 1].intValue
+                let confidence = multiArray[offset + 2].floatValue
+                if confidence > 0.8 { // 信頼度の閾値を適用
+                    let x = multiArray[offset + 3].floatValue
+                    let y = multiArray[offset + 4].floatValue
+                    let width = multiArray[offset + 5].floatValue
+                    let height = multiArray[offset + 6].floatValue
+                    
+                    // 検出結果を表示するために、バウンディングボックスを描画
+                    let bbox = CGRect(x: CGFloat(x), y: CGFloat(y), width: CGFloat(width), height: CGFloat(height))
+                    debugPrint(a, b, confidence, bbox)
+                }
+            }
+        }
+    }
+
 
     func show(predictions: [VNRecognizedObjectObservation]) {
         let width = videoPreview.bounds.width  // 375 pix
@@ -454,10 +485,14 @@ class ViewController: UIViewController {
                 let bestClass = prediction.labels[0].identifier
                 let confidence = prediction.labels[0].confidence
                 // print(confidence, rect)  // debug (confidence, xywh) with xywh origin top left (pixels)
+                
+                if bestClass != "cake" {
+                    continue;
+                }
 
                 // Show the bounding box.
                 boundingBoxViews[i].show(frame: rect,
-                        label: String(format: "%@ %.1f", bestClass, confidence * 100),
+                        label: "Bolt",
                         color: colors[bestClass] ?? UIColor.white,
                         alpha: CGFloat((confidence - 0.2) / (1.0 - 0.2) * 0.9))  // alpha 0 (transparent) to 1 (opaque) for conf threshold 0.2 to 1.0)
 

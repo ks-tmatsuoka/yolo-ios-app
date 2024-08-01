@@ -1,0 +1,17 @@
+{
+  "MLModelVersionStringKey" : "8.2.50",
+  "MLModelDescriptionKey" : "Ultralytics detector model trained on datasets.yaml",
+  "MLModelCreatorDefinedKey" : {
+    "IoU threshold" : "1.0",
+    "Confidence threshold" : "0.50",
+    "stride" : "32",
+    "docs" : "https:\/\/docs.ultralytics.com",
+    "task" : "detect",
+    "imgsz" : "[640, 640]",
+    "date" : "2024-07-23T15:35:56.409420",
+    "batch" : "1",
+    "names" : "{0: 'Group', 1: 'Washer', 2: 'NutBack', 3: 'NutFront', 4: 'BoltHead', 5: 'BoltBad', 6: 'MarkerBolt', 7: 'MarkerNut', 8: 'MarkerWasher', 9: 'MarkerBase'}"
+  },
+  "MLModelAuthorKey" : "Ultralytics",
+  "MLModelLicenseKey" : "AGPL-3.0 License (https:\/\/ultralytics.com\/license)"
+}
